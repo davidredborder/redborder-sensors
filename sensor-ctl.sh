@@ -116,11 +116,26 @@ function stop_sandbox() {
     
     echo "[+] Stopping sensor '$name' (PID $pid)..."
     
-    # Try to kill gracefully then forcefully
+    local cg_dir="/sys/fs/cgroup/redborder-sensors/$name"
+    
+    # Kill all processes in the sandbox cgroup first if available
+    if [ -d "$cg_dir" ]; then
+        if [ -f "$cg_dir/cgroup.kill" ]; then
+            echo 1 > "$cg_dir/cgroup.kill" 2>/dev/null || true
+        elif [ -f "$cg_dir/cgroup.procs" ]; then
+            while IFS= read -r cpid; do
+                [ -n "$cpid" ] && kill -9 "$cpid" 2>/dev/null || true
+            done < "$cg_dir/cgroup.procs"
+        fi
+    fi
+
+    # Kill descendants and main PID gracefully then forcefully
+    pkill -P "$pid" 2>/dev/null || true
     kill "$pid" 2>/dev/null || true
     sleep 1
+    pkill -9 -P "$pid" 2>/dev/null || true
     kill -9 "$pid" 2>/dev/null || true
-    
+
     # Cleanup network
     local host_iface="veth-$name"
     local ip_file="$STATE_DIR/$name.ip"
@@ -163,7 +178,6 @@ function stop_sandbox() {
     rm -rf "$PERSIST_DIR/$name"
     
     # Cleanup cgroup
-    local cg_dir="/sys/fs/cgroup/redborder-sensors/$name"
     if [ -d "$cg_dir" ]; then
         echo "[+] Removing cgroup $cg_dir..."
         rmdir "$cg_dir" 2>/dev/null || true
