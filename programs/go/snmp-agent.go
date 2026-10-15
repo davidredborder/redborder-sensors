@@ -216,16 +216,32 @@ func isLess(a, b asn1.ObjectIdentifier) bool {
 	return len(a) < len(b)
 }
 
+func resolveConfigFile(explicitPath string, candidates ...string) string {
+	if explicitPath != "" {
+		return explicitPath
+	}
+	for _, c := range candidates {
+		if c == "" {
+			continue
+		}
+		if fi, err := os.Stat(c); err == nil && !fi.IsDir() {
+			return c
+		}
+	}
+	return ""
+}
+
 func main() {
 	configPath := flag.String("config", "", "Path to JSON configuration file")
 	flag.Parse()
 
-	if *configPath != "" {
-		if err := loadConfig(*configPath); err != nil {
-			fmt.Printf("[-] Error loading config: %v\n", err)
+	targetConfig := resolveConfigFile(*configPath, "config.json", "/configs/snmp/config.json")
+	if targetConfig != "" {
+		if err := loadConfig(targetConfig); err != nil {
+			fmt.Printf("[-] Error loading config from %s: %v\n", targetConfig, err)
 			os.Exit(1)
 		}
-		fmt.Printf("[+] Loaded %d OIDs from %s\n", len(orderedOIDs), *configPath)
+		fmt.Printf("[+] Loaded %d OIDs from %s\n", len(orderedOIDs), targetConfig)
 	} else {
 		// Default OIDs if no config provided
 		currentConfig.Community = "public"

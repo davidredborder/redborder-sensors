@@ -560,10 +560,33 @@ func main() {
 	// Default configuration
 	cfg := Config{Mode: *modeF, Target: *targetF, Port: *portF, Rate: *rateF, RateModel: *modelF, Records: *recordsF, EngineType: 1, EngineID: 1, SourceID: 1001, SamplingRate: uint32(*samplingF), Scenarios: []FlowScenario{{Name: "default", SrcCIDR: "10.0.0.0/8", DstCIDR: "192.168.0.0/16", SrcPorts: []uint16{1024}, DstPorts: []uint16{80}, Protos: []uint8{6}, Weight: 100}}, PcapFile: *pcapF, Hostname: *hostF}
 
-	// Overwrite with config file if provided
-	if *cP != "" {
-		f, err := os.ReadFile(*cP); if err != nil { fmt.Printf("[-] Error reading config: %v\n", err); os.Exit(1) }
-		if err := json.Unmarshal(f, &cfg); err != nil { fmt.Printf("[-] Error parsing config: %v\n", err); os.Exit(1) }
+	// Overwrite with config file if provided or discovered
+	targetConfig := *cP
+	if targetConfig == "" {
+		for _, c := range []string{"config.json", "/configs/telemetry/config.json", "/configs/sflow/config.json"} {
+			if fi, err := os.Stat(c); err == nil && !fi.IsDir() {
+				targetConfig = c
+				break
+			}
+		}
+	}
+	if targetConfig != "" {
+		f, err := os.ReadFile(targetConfig)
+		if err != nil {
+			if *cP != "" {
+				fmt.Printf("[-] Error reading config: %v\n", err)
+				os.Exit(1)
+			}
+		} else {
+			if err := json.Unmarshal(f, &cfg); err != nil {
+				fmt.Printf("[-] Error parsing config from %s: %v\n", targetConfig, err)
+				if *cP != "" {
+					os.Exit(1)
+				}
+			} else {
+				fmt.Printf("[+] Loaded configuration from %s\n", targetConfig)
+			}
+		}
 	}
 
 	// Finally, overwrite with explicit command-line flags (highest priority)

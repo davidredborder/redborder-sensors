@@ -491,12 +491,26 @@ func main() {
 		},
 	}
 
-	if *configPath != "" {
-		f, err := os.ReadFile(*configPath)
+	targetConfig := *configPath
+	if targetConfig == "" {
+		for _, c := range []string{"config.json", "/configs/ips/config.json"} {
+			if fi, err := os.Stat(c); err == nil && !fi.IsDir() {
+				targetConfig = c
+				break
+			}
+		}
+	}
+
+	if targetConfig != "" {
+		f, err := os.ReadFile(targetConfig)
 		if err == nil {
 			if err := json.Unmarshal(f, &cfg); err != nil {
-				fmt.Printf("[-] Error parsing config: %v\n", err)
+				fmt.Printf("[-] Error parsing config from %s: %v\n", targetConfig, err)
+			} else {
+				fmt.Printf("[+] Loaded configuration from %s\n", targetConfig)
 			}
+		} else if *configPath != "" {
+			fmt.Printf("[-] Error reading config: %v\n", err)
 		}
 	}
 

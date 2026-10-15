@@ -77,12 +77,25 @@ func main() {
 	flag.IntVar(&failRateFlag, "fail-rate", 0, "Probability (0-100) of returning 'Critical' health")
 	flag.Parse()
 
-	if *configPath != "" {
-		data, err := os.ReadFile(*configPath)
+	targetConfig := *configPath
+	if targetConfig == "" {
+		for _, c := range []string{"config.json", "/configs/redfish/config.json"} {
+			if fi, err := os.Stat(c); err == nil && !fi.IsDir() {
+				targetConfig = c
+				break
+			}
+		}
+	}
+
+	if targetConfig != "" {
+		data, err := os.ReadFile(targetConfig)
 		if err == nil {
-			json.Unmarshal(data, &currentConfig)
-			fmt.Printf("[+] Loaded configuration from %s\n", *configPath)
-		} else {
+			if err := json.Unmarshal(data, &currentConfig); err != nil {
+				fmt.Printf("[-] Error parsing config from %s: %v\n", targetConfig, err)
+			} else {
+				fmt.Printf("[+] Loaded configuration from %s\n", targetConfig)
+			}
+		} else if *configPath != "" {
 			fmt.Printf("[-] Error loading config: %v\n", err)
 		}
 	}

@@ -42,15 +42,30 @@ func main() {
 	verbose := flag.Bool("v", false, "Enable verbose logging")
 	flag.Parse()
 
-	if *configPath != "" {
-		data, err := os.ReadFile(*configPath)
+	targetConfig := *configPath
+	if targetConfig == "" {
+		for _, c := range []string{"config.json", "/configs/webproxy/config.json"} {
+			if fi, err := os.Stat(c); err == nil && !fi.IsDir() {
+				targetConfig = c
+				break
+			}
+		}
+	}
+
+	if targetConfig != "" {
+		data, err := os.ReadFile(targetConfig)
 		if err == nil {
 			if err := json.Unmarshal(data, &currentConfig); err != nil {
-				log.Fatalf("[-] Error parsing config: %v", err)
+				fmt.Printf("[-] Error parsing config from %s: %v\n", targetConfig, err)
+				if *configPath != "" {
+					os.Exit(1)
+				}
+			} else {
+				fmt.Printf("[+] Loaded configuration from %s\n", targetConfig)
 			}
-			fmt.Printf("[+] Loaded configuration from %s\n", *configPath)
-		} else {
+		} else if *configPath != "" {
 			fmt.Printf("[-] Error loading config: %v\n", err)
+			os.Exit(1)
 		}
 	}
 

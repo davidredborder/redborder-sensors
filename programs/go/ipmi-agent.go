@@ -47,9 +47,26 @@ func main() {
 	listenAddr := flag.String("listen", ":623", "Listen address")
 	flag.Parse()
 	fmt.Printf("[!] IPMI Mock Agent v1.45 starting (STRICT FALLBACK)...\n")
-	if *configPath != "" {
-		data, _ := os.ReadFile(*configPath)
-		json.Unmarshal(data, &config)
+	targetConfig := *configPath
+	if targetConfig == "" {
+		for _, c := range []string{"config.json", "/configs/ipmi/config.json"} {
+			if fi, err := os.Stat(c); err == nil && !fi.IsDir() {
+				targetConfig = c
+				break
+			}
+		}
+	}
+	if targetConfig != "" {
+		data, err := os.ReadFile(targetConfig)
+		if err == nil {
+			if err := json.Unmarshal(data, &config); err != nil {
+				fmt.Printf("[-] Error parsing config from %s: %v\n", targetConfig, err)
+			} else {
+				fmt.Printf("[+] Loaded configuration from %s\n", targetConfig)
+			}
+		} else if *configPath != "" {
+			fmt.Printf("[-] Error reading config: %v\n", err)
+		}
 	}
 	initSDR()
 	addr, _ := net.ResolveUDPAddr("udp", *listenAddr)

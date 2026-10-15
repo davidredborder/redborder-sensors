@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -49,13 +50,40 @@ type Config struct {
 var globalVerbose bool
 
 func main() {
-	configPath := flag.String("config", "config.json", "Path to the JSON configuration file")
+	configPath := flag.String("config", "", "Path to the JSON configuration file")
 	verbose := flag.Bool("v", false, "Enable verbose logging")
 	flag.Parse()
 
-	config, err := loadConfig(*configPath)
-	if err != nil {
-		log.Fatalf("[-] Failed to load config: %v", err)
+	targetConfig := *configPath
+	if targetConfig == "" {
+		for _, c := range []string{"config.json", "/configs/webserver/config.json"} {
+			if fi, err := os.Stat(c); err == nil && !fi.IsDir() {
+				targetConfig = c
+				break
+			}
+		}
+	}
+
+	var config *Config
+	if targetConfig != "" {
+		var err error
+		config, err = loadConfig(targetConfig)
+		if err != nil {
+			log.Fatalf("[-] Failed to load config from %s: %v", targetConfig, err)
+		}
+		fmt.Printf("[+] Loaded configuration from %s\n", targetConfig)
+	} else {
+		config = &Config{
+			Port: 8080,
+			Endpoints: []EndpointConfig{
+				{
+					Path:   "/",
+					Status: 200,
+					Body:   "OK",
+				},
+			},
+		}
+		fmt.Println("[+] No config found, using default webserver configuration on :8080")
 	}
 
 	if *verbose {

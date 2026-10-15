@@ -568,20 +568,30 @@ func main() {
 
 	loadConfig := func() {
 		newCfg := Config{ManagerURL: *mU, APIAccessKey: *aK, Rate: *rateF, Insecure: *inS, Domain: *domF, Verbose: *verbF, SensorType: *sT}
-		if *cP != "" {
-			f, err := os.ReadFile(*cP)
+		targetConfig := *cP
+		if targetConfig == "" {
+			for _, c := range []string{"config.json", "/configs/proxy/config.json"} {
+				if fi, err := os.Stat(c); err == nil && !fi.IsDir() {
+					targetConfig = c
+					break
+				}
+			}
+		}
+		if targetConfig != "" {
+			f, err := os.ReadFile(targetConfig)
 			if err == nil {
 				if err := json.Unmarshal(f, &newCfg); err != nil {
-					fmt.Printf("[-] Error parsing config file %s: %v\n", *cP, err)
+					fmt.Printf("[-] Error parsing config file %s: %v\n", targetConfig, err)
+				} else {
+					fmt.Printf("[+] Configuration loaded/reloaded from %s\n", targetConfig)
 				}
-			} else {
+			} else if *cP != "" {
 				fmt.Printf("[-] Error reading config file %s: %v\n", *cP, err)
 			}
 		}
 		configMutex.Lock()
 		config = newCfg
 		configMutex.Unlock()
-		fmt.Printf("[+] Configuration loaded/reloaded from %s\n", *cP)
 	}
 
 	loadConfig()
