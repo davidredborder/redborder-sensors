@@ -309,31 +309,31 @@ function start_sandbox() {
     # Shorthand resolution
     if [ ${#cmd[@]} -gt 0 ]; then
         case "${cmd[0]}" in
-            ips)
+            ips|ips-agent)
                 cmd=("/sensor-data/ips-agent" "-config" "$SCRIPT_DIR/configs/ips/config.json" "--state" "/var/state/ips-state.json" "${cmd[@]:1}")
                 ;;
-            snmp)
+            snmp|snmp-agent)
                 cmd=("/sensor-data/snmp-agent" "-config" "$SCRIPT_DIR/configs/snmp/config.json" "${cmd[@]:1}")
                 ;;
-            ipmi)
+            ipmi|ipmi-agent)
                 cmd=("/sensor-data/ipmi-agent" "-config" "$SCRIPT_DIR/configs/ipmi/config.json" "${cmd[@]:1}")
                 ;;
-            redfish)
+            redfish|redfish-agent)
                 cmd=("/sensor-data/redfish-agent" "-config" "$SCRIPT_DIR/configs/redfish/config.json" "${cmd[@]:1}")
                 ;;
-            webproxy)
+            webproxy|webproxy-agent)
                 cmd=("/sensor-data/webproxy-agent" "-config" "$SCRIPT_DIR/configs/webproxy/config.json" "${cmd[@]:1}")
                 ;;
-            telemetry)
+            telemetry|telemetry-agent)
                 cmd=("/sensor-data/telemetry-agent" "-config" "$SCRIPT_DIR/configs/telemetry/config.json" "${cmd[@]:1}")
                 ;;
-            sflow)
+            sflow|sflow-agent)
                 cmd=("/sensor-data/telemetry-agent" "-config" "$SCRIPT_DIR/configs/sflow/config.json" "${cmd[@]:1}")
                 ;;
             webserver)
                 cmd=("/sensor-data/webserver" "-config" "$SCRIPT_DIR/configs/webserver/config.json" "${cmd[@]:1}")
                 ;;
-            proxy)
+            proxy|proxy-agent)
                 cmd=("/sensor-data/proxy-agent" "-config" "$SCRIPT_DIR/configs/proxy/config.json" "${cmd[@]:1}")
                 ;;
         esac
@@ -619,31 +619,31 @@ function exec_command() {
 
     # Shorthand resolution for exec
     case "${cmd[0]}" in
-        ips)
+        ips|ips-agent)
             cmd=("$SCRIPT_DIR/dist/ips-agent" "-config" "$SCRIPT_DIR/configs/ips/config.json" "--state" "/var/state/ips-state.json" "${cmd[@]:1}")
             ;;
-        snmp)
+        snmp|snmp-agent)
             cmd=("$SCRIPT_DIR/dist/snmp-agent" "-config" "$SCRIPT_DIR/configs/snmp/config.json" "${cmd[@]:1}")
             ;;
-        ipmi)
+        ipmi|ipmi-agent)
             cmd=("$SCRIPT_DIR/dist/ipmi-agent" "-config" "$SCRIPT_DIR/configs/ipmi/config.json" "${cmd[@]:1}")
             ;;
-        redfish)
+        redfish|redfish-agent)
             cmd=("$SCRIPT_DIR/dist/redfish-agent" "-config" "$SCRIPT_DIR/configs/redfish/config.json" "${cmd[@]:1}")
             ;;
-        webproxy)
+        webproxy|webproxy-agent)
             cmd=("$SCRIPT_DIR/dist/webproxy-agent" "-config" "$SCRIPT_DIR/configs/webproxy/config.json" "${cmd[@]:1}")
             ;;
-        telemetry)
+        telemetry|telemetry-agent)
             cmd=("$SCRIPT_DIR/dist/telemetry-agent" "-config" "$SCRIPT_DIR/configs/telemetry/config.json" "${cmd[@]:1}")
             ;;
-        sflow)
+        sflow|sflow-agent)
             cmd=("$SCRIPT_DIR/dist/telemetry-agent" "-config" "$SCRIPT_DIR/configs/sflow/config.json" "${cmd[@]:1}")
             ;;
         webserver)
             cmd=("$SCRIPT_DIR/dist/webserver" "-config" "$SCRIPT_DIR/configs/webserver/config.json" "${cmd[@]:1}")
             ;;
-        proxy)
+        proxy|proxy-agent)
             cmd=("$SCRIPT_DIR/dist/proxy-agent" "-config" "$SCRIPT_DIR/configs/proxy/config.json" "${cmd[@]:1}")
             ;;
     esac
