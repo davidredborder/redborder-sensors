@@ -2,12 +2,16 @@
 set -e
 
 NAME="redborder-sensors"
-SPEC_FILE="redborder-sensors.spec"
-VERSION=$(grep "^Version:" "$SPEC_FILE" | awk '{print $2}')
+SPEC_FILE="packaging/rpm/redborder-sensors.spec"
+if [ -f "VERSION" ]; then
+    VERSION=$(tr -d '[:space:]' < VERSION)
+else
+    VERSION=$(rpmspec -P "$SPEC_FILE" 2>/dev/null | grep "^Version:" | awk '{print $2}')
+fi
 BUILD_DIR="/tmp/rpmbuild-sensors"
 
 if [ -z "$VERSION" ]; then
-    echo "[-] Error: Could not determine version from $SPEC_FILE"
+    echo "[-] Error: Could not determine version"
     exit 1
 fi
 
@@ -24,7 +28,7 @@ cp -r . "$STAGING_DIR"
 tar -czf "$BUILD_DIR/SOURCES/$NAME-$VERSION.tar.gz" -C "$BUILD_DIR/SOURCES" "$NAME-$VERSION"
 
 echo "[+] Running rpmbuild..."
-rpmbuild -ba --define "_topdir $BUILD_DIR" redborder-sensors.spec
+rpmbuild -ba --define "_topdir $BUILD_DIR" --define "__version $VERSION" --define "__release 1" "$SPEC_FILE"
 
 echo ""
 echo "[+] RPM build complete!"

@@ -1,8 +1,8 @@
 %define debug_package %{nil}
 
 Name:           redborder-sensors
-Version:        0.2.2
-Release:        1%{?dist}
+Version:        %{?__version}%{!?__version:0.2.2}
+Release:        %{?__release}%{!?__release:1}%{?dist}
 Summary:        Lightweight sensor sandbox for redborder
 
 Packager:       David Vanhoucke <dvanhoucke@redborder.com>
@@ -13,6 +13,7 @@ Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  golang
 BuildRequires:  gcc
 BuildRequires:  glibc-static
+BuildRequires:  make
 BuildRequires:  systemd
 Requires:       bash
 Requires:       bash-completion
@@ -27,7 +28,7 @@ Requires:       procps-ng
 This project provides a lightweight, isolated environment (sandbox) for running redborder "test sensors" using Linux namespaces. Includes chaos testing utilities and reboot persistence.
 
 %prep
-%setup -q
+%setup -qn %{name}-%{version}
 
 %build
 make

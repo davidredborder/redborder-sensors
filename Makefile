@@ -13,7 +13,7 @@ GO_BINS = $(patsubst programs/go/%.go, $(INSTALL_DIR)/%, $(GO_FILES))
 C_FILES = $(wildcard programs/c/*.c)
 C_BINS = $(patsubst programs/c/%.c, $(INSTALL_DIR)/%, $(C_FILES))
 
-.PHONY: all clean go_progs c_progs
+.PHONY: all clean go_progs c_progs rpm srpm distclean
 
 all: $(INSTALL_DIR) go_progs c_progs
 
@@ -37,3 +37,13 @@ $(INSTALL_DIR)/%: programs/c/%.c
 clean:
 	@echo "[+] Cleaning up binaries in $(INSTALL_DIR)..."
 	rm -f $(GO_BINS) $(C_BINS)
+	@if [ -d packaging/rpm ]; then $(MAKE) -C packaging/rpm clean; fi
+
+rpm: clean
+	$(MAKE) -C packaging/rpm rpm
+
+srpm: clean
+	$(MAKE) -C packaging/rpm srpm
+
+distclean: clean
+	$(MAKE) -C packaging/rpm distclean

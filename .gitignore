@@ -9,6 +9,12 @@ wget-log
 
 # RPM Build
 /tmp/rpmbuild-sensors/
+/packaging/rpm/SOURCES/
+/packaging/rpm/pkgs/
+/packaging/rpm/available_pkgs
+/packaging/rpm/installed_pkgs
+/rpms/
+*-sbom.spdx.json
 
 # OS/Editor artifacts
 .DS_Store
